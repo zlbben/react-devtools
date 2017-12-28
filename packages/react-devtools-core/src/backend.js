@@ -40,7 +40,7 @@ if (window.document) {
 function connectToDevTools(options: ?ConnectOptions) {
   var {
     host = 'localhost',
-    port = 8097,
+    port = 9305,
     websocket,
     resolveRNStyle = null,
     isAppActive = () => true,
