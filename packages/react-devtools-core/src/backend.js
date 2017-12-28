@@ -13,7 +13,7 @@
 type ConnectOptions = {
   host?: string,
   port?: number,
-  resolveRNStyle?: (style: number) => ?Object,
+  resolveRNStyle?: (style: number) =>?Object,
   isAppActive?: () => boolean,
   websocket?: ?WebSocket,
 };
@@ -66,9 +66,9 @@ function connectToDevTools(options: ?ConnectOptions) {
   // See D6251744.
   var ws = websocket ? websocket : new window.WebSocket(uri);
   ws.onclose = handleClose;
-  ws.onerror = handleClose;
+  ws.onerror = handleError;
   ws.onmessage = handleMessage;
-  ws.onopen = function() {
+  ws.onopen = function () {
     var wall = {
       listen(fn) {
         messageListeners.push(fn);
@@ -84,10 +84,17 @@ function connectToDevTools(options: ?ConnectOptions) {
   };
 
   var hasClosed = false;
-  function handleClose() {
+  function handleError() {
     if (!hasClosed) {
       hasClosed = true;
       scheduleRetry();
+      closeListeners.forEach(fn => fn());
+    }
+  }
+
+  function handleClose() {
+    if (!hasClosed) {
+      hasClosed = true;
       closeListeners.forEach(fn => fn());
     }
   }
@@ -123,7 +130,7 @@ function setupBackend(wall, resolveRNStyle) {
     window.__REACT_DEVTOOLS_GLOBAL_HOOK__.emit('shutdown');
     bridge = null;
     agent = null;
-    console.log('closing devtools');
+    // console.log('closing devtools');
   });
 
   var bridge = new Bridge(wall);

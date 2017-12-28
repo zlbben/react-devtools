@@ -21,31 +21,38 @@ var React = require('react');
 var ReactDOM = require('react-dom');
 
 var node = null;
-var onStatusChange = function noop() {};
+var onStatusChange = function noop() { };
 var projectRoots = [];
-var wall = null;
+
 var panel = null;
 
-var config = {
-  reload,
-  alreadyFoundReact: true,
-  showInspectButton: false,
-  showHiddenThemes: true,
-  inject(done) {
-    done(wall);
-  },
-  showElementSource(source) {
-    launchEditor(source.fileName, source.lineNumber, projectRoots);
-  },
-};
+var config = {}
+
+function getConfig(wall) {
+  return Object.assign({}, config, {
+    reload,
+    alreadyFoundReact: true,
+    showInspectButton: false,
+    showHiddenThemes: true,
+    inject(done) {
+      done(wall);
+    },
+    showElementSource(source) {
+      launchEditor(source.fileName, source.lineNumber, projectRoots);
+    },
+    wall
+  })
+}
+
 
 var log = (...args) => console.log('[React DevTools]', ...args);
 log.warn = (...args) => console.warn('[React DevTools]', ...args);
 log.error = (...args) => console.error('[React DevTools]', ...args);
 
-function reload() {
-  ReactDOM.unmountComponentAtNode(node);
+function reload(config) {
+  // ReactDOM.unmountComponentAtNode(node);
   node.innerHTML = '';
+  panel = null
   setTimeout(() => {
     panel = ReactDOM.render(<Panel {...config} />, node);
   }, 100);
@@ -71,12 +78,7 @@ function onError(e) {
 
 function initialize(socket) {
   var listeners = [];
-  socket.onmessage = (evt) => {
-    var data = JSON.parse(evt.data);
-    listeners.forEach((fn) => fn(data));
-  };
-
-  wall = {
+  let wall = {
     listen(fn) {
       listeners.push(fn);
     },
@@ -90,8 +92,24 @@ function initialize(socket) {
     },
   };
 
+  let config = getConfig(wall)
+  config.reload = function () {
+    ReactDOM.unmountComponentAtNode(node);
+    node.innerHTML = '';
+    setTimeout(() => {
+      panel = ReactDOM.render(<Panel {...config} />, node);
+    }, 100);
+  }
+
+  socket.onmessage = (evt) => {
+    var data = JSON.parse(evt.data);
+    listeners.forEach((fn) => fn(data));
+  };
+
   log('Connected');
-  reload();
+
+  reload(config);
+  // setTimeout(function () { reload(config) }, 5000)
 }
 
 var restartTimeout = null;
@@ -108,7 +126,7 @@ function connectToSocket(socket) {
   initialize(socket);
 
   return {
-    close: function() {
+    close: function () {
       onDisconnected();
     },
   };
@@ -116,24 +134,22 @@ function connectToSocket(socket) {
 
 function startServer(port = 8097) {
   var httpServer = require('http').createServer();
-  var server = new ws.Server({server: httpServer});
+  var server = new ws.Server({ server: httpServer });
   var connected = false;
   server.on('connection', (socket) => {
+    //保证只有一个socket在线
     if (connected) {
       connected.close();
-      log.warn(
-        'Only one connection allowed at a time.',
-        'Closing the previous connection'
-      );
+      connected = null
     }
     connected = socket;
     socket.onerror = (err) => {
-      connected = false;
+      // connected = false;
       onDisconnected();
       log.error('Error with websocket connection', err);
     };
     socket.onclose = () => {
-      connected = false;
+      // connected = false;
       onDisconnected();
       log('Connection to RN closed');
     };
@@ -165,8 +181,8 @@ function startServer(port = 8097) {
   });
 
   return {
-    close: function() {
-      connected = false;
+    close: function () {
+      connected = null;
       onDisconnected();
       clearTimeout(restartTimeout);
       server.close();
@@ -193,7 +209,7 @@ var DevtoolsUI = {
   setDefaultThemeName(themeName) {
     config.themeName = themeName;
     if (panel) {
-      var {store} = panel.getChildContext();
+      var { store } = panel.getChildContext();
       // Change default themeName if panel mounted
       store.changeDefaultTheme(themeName);
     }

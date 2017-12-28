@@ -1,10 +1,10 @@
 {
-  "name": "react-devtools-core",
-  "version": "3.0.0",
+  "name": "tbe-react-devtools-core",
+  "version": "0.0.1",
   "description": "Use react-devtools outside of the browser",
   "main": "./build/backend.js",
   "repository": {
-    "url": "https://github.com/facebook/react-devtools.git",
+    "url": "https://github.com/zlbben/tbe-react-devtools.git",
     "type": "git"
   },
   "files": [
@@ -21,7 +21,7 @@
     "build": "npm run backend && npm run standalone",
     "prepublish": "npm run build"
   },
-  "author": "Jared Forsyth",
+  "author": "melonzhang",
   "license": "BSD-3-Clause",
   "dependencies": {
     "shell-quote": "^1.6.1",
