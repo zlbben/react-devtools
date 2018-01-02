@@ -39,12 +39,17 @@ if (window.document) {
 
 function connectToDevTools(options: ?ConnectOptions) {
   var {
-    host = 'localhost',
+    host = '127.0.0.1',
     port = 9305,
     websocket,
     resolveRNStyle = null,
     isAppActive = () => true,
   } = options || {};
+
+  //从全局属性中获取端口号
+  if(window.window.REACT_DEVTOOLS_PORT){
+    port = window.REACT_DEVTOOLS_PORT
+  }
 
   function scheduleRetry() {
     // Two seconds because RN had issues with too fast retries.

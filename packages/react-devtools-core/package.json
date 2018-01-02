@@ -1,6 +1,6 @@
 {
   "name": "tbe-react-devtools-core",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Use react-devtools outside of the browser",
   "main": "./build/backend.js",
   "repository": {

@@ -167,7 +167,7 @@ function startServer(port = 8097) {
     var backendFile = fs.readFileSync(
       path.join(__dirname, '../build/backend.js')
     );
-    res.end(backendFile + '\n;ReactDevToolsBackend.connectToDevTools();');
+    res.end(backendFile + `\n;window.REACT_DEVTOOLS_PORT=${port}` + '\n;ReactDevToolsBackend.connectToDevTools();');
   });
 
   httpServer.on('error', (e) => {
