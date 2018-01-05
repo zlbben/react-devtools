@@ -82,7 +82,9 @@ function connectToDevTools(options: ?ConnectOptions) {
         closeListeners.push(fn);
       },
       send(data) {
-        ws.send(JSON.stringify(data));
+        try{
+          ws.send(JSON.stringify(data));
+        }catch(e){}
       },
     };
     setupBackend(wall, resolveRNStyle);
