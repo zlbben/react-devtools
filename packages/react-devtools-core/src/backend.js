@@ -154,7 +154,7 @@ function setupBackend(wall, resolveRNStyle) {
   setupRelay(bridge, agent, window.__REACT_DEVTOOLS_GLOBAL_HOOK__);
 
   var _connectTimeout = setTimeout(() => {
-    console.warn('react-devtools agent got no connection');
+    // console.warn('react-devtools agent got no connection');
   }, 20000);
 
   agent.once('connected', () => {
